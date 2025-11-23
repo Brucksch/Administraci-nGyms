@@ -1,0 +1,57 @@
+package gym;
+
+import java.time.LocalDate;
+import java.time.Period;
+
+public class Cliente implements Pagable, Identificable {
+    private final String dni;
+    private String nombre;
+    private Plan plan;
+    private final LocalDate fechaAlta;
+
+    public Cliente(String dni, String nombre, Plan plan, LocalDate fechaAlta) {
+        this.dni = dni;
+        this.nombre = nombre;
+        this.plan = plan;
+        this.fechaAlta = fechaAlta;
+    }
+
+    public String getDni(){ return dni; }
+    public String getNombre(){ return nombre; }
+    public void setNombre(String n){ this.nombre = n; }
+    public Plan getPlan(){ return plan; }
+    public void setPlan(Plan p){ this.plan = p; }
+    public LocalDate getFechaAlta(){ return fechaAlta; }
+
+    @Override
+    public String id() { return dni; }
+
+    @Override
+    public double calcularCuota() {
+        long meses = Period.between(fechaAlta, LocalDate.now()).toTotalMonths();
+        double base = plan.precio();
+        if (meses >= 12) {
+            return base * 0.9; // 10% desc
+        } else {
+            return base;
+        }
+    }
+
+    @Override
+    public String toString(){
+        return "Cliente{dni='" + dni + "', nombre='" + nombre + "', plan=" + plan + ", alta=" + fechaAlta + "}";
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if (this == o) return true;
+        if (!(o instanceof Cliente)) return false;
+        Cliente c = (Cliente)o;
+        return dni != null && dni.equals(c.dni);
+    }
+
+    @Override
+    public int hashCode(){
+        return dni == null ? 0 : dni.hashCode();
+    }
+}
