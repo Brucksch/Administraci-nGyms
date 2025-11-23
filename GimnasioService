@@ -1,0 +1,87 @@
+package gym;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
+public class GimnasioService {
+    private final ArrayList<Cliente> clientes = new ArrayList<Cliente>();
+    private final OperacionLog log = new OperacionLog();
+    private final int[] altasPorMes = new int[12];
+
+    public void altaCliente(Cliente c){
+        if (existeDni(c.getDni())) throw new IllegalArgumentException("DNI duplicado");
+        clientes.add(c);
+        LocalDate fa = c.getFechaAlta();
+        int idx = fa.getMonthValue() - 1;
+        if (idx >= 0 && idx < 12) altasPorMes[idx]++;
+        log.push("ALTA " + c.getDni() + " (" + c.getNombre() + ") plan " + c.getPlan());
+    }
+
+    public Cliente buscarPorDni(String dni){
+        for (int i = 0; i < clientes.size(); i++) {
+            if (clientes.get(i).getDni().equals(dni)) {
+                return clientes.get(i);
+            }
+        }
+        throw new SocioNoEncontradoException("No existe cliente con DNI " + dni);
+    }
+
+    public void modificarNombre(String dni, String nuevoNombre){
+        Cliente c = buscarPorDni(dni);
+        c.setNombre(nuevoNombre);
+        log.push("MODIFICAR nombre " + dni + " -> '" + nuevoNombre + "'");
+    }
+
+    public void cambiarPlan(String dni, Plan p){
+        Cliente c = buscarPorDni(dni);
+        c.setPlan(p);
+        log.push("CAMBIAR plan " + dni + " -> " + p);
+    }
+
+    public boolean baja(String dni){
+        for (int i = 0; i < clientes.size(); i++) {
+            if (clientes.get(i).getDni().equals(dni)) {
+                clientes.remove(i);
+                log.push("BAJA " + dni);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Cliente[] listarOrdenadosPorNombre(){
+        ArrayList<Cliente> copia = new ArrayList<Cliente>(clientes);
+        Collections.sort(copia, new Comparator<Cliente>() {
+            public int compare(Cliente a, Cliente b) {
+                return a.getNombre().compareToIgnoreCase(b.getNombre());
+            }
+        });
+        Cliente[] arr = new Cliente[copia.size()];
+        for (int i = 0; i < copia.size(); i++) arr[i] = copia.get(i);
+        return arr;
+    }
+
+    public double cuotaDe(String dni){
+        Cliente c = buscarPorDni(dni);
+        return c.calcularCuota();
+    }
+
+    public boolean existeDni(String dni){
+        for (int i = 0; i < clientes.size(); i++) {
+            if (clientes.get(i).getDni().equals(dni)) return true;
+        }
+        return false;
+    }
+
+    public int[] getAltasPorMes(){
+        int[] copia = new int[12];
+        for (int i = 0; i < 12; i++) copia[i] = altasPorMes[i];
+        return copia;
+    }
+
+    public String[] logComoLineas(){
+        return log.comoLineas();
+    }
+}
