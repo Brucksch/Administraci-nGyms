@@ -1,0 +1,43 @@
+package gym;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+public class OperacionLog {
+    static class Nodo {
+        LocalDateTime ts;
+        String msg;
+        Nodo next;
+        Nodo(LocalDateTime t, String m){ ts = t; msg = m; }
+    }
+    private Nodo head;
+    private Nodo tail;
+    private int size = 0;
+
+    public void push(String msg){
+        Nodo n = new Nodo(LocalDateTime.now(), msg);
+        if (head == null) {
+            head = n;
+            tail = n;
+        } else {
+            tail.next = n;
+            tail = n;
+        }
+        size++;
+    }
+
+    public int size(){ return size; }
+
+    public String[] comoLineas(){
+        String[] out = new String[size];
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        Nodo it = head;
+        int i = 0;
+        while (it != null) {
+            out[i] = "[" + it.ts.format(f) + "] " + it.msg;
+            i++;
+            it = it.next;
+        }
+        return out;
+    }
+}
